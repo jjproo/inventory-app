@@ -1,37 +1,478 @@
-
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/><title>Inventory PWA Mobile Offline</title><link rel="manifest" href="./manifest.json"/><link rel="stylesheet" href="./css/style.css"/><meta name="theme-color" content="#4CAF50"/></head>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Inventory Dashboard + Stocktake</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css" />
+  <meta name="theme-color" content="#2563eb" />
+</head>
 <body>
-<header><h1>Inventory Dashboard + Stocktake</h1><div class="sub">Phone • Tablet • Offline ready</div><button class="install" id="installBtn" type="button" style="display:none;">Install App</button><div class="install-note">Open once online, then install to phone/tablet for offline use.</div></header>
-<nav>
-<button class="tab-btn active" data-tab="upload">Upload</button><button class="tab-btn" data-tab="dashboard">Dashboard</button><button class="tab-btn" data-tab="alerts">Alerts</button><button class="tab-btn" data-tab="items">Items</button><button class="tab-btn" data-tab="stocktake">Stocktake</button><button class="tab-btn" data-tab="settings">Settings</button>
-</nav>
-<main>
-<section id="upload" class="tab-section"><div class="card"><h2 style="margin-top:0;">Upload inventory Excel</h2><p class="small">Supported columns: <span class="pill">SAP Material</span> <span class="pill">Material Description</span> <span class="pill">Stock on hand</span> <span class="pill">Bin location</span> <span class="pill">minimum QTY</span> <span class="pill">maximum QTY</span></p>
-<label>Choose Excel file</label><input type="file" id="excelUpload" accept=".xlsx,.xls"/>
-<div class="row"><div><label>Search</label><input type="text" id="searchInput" placeholder="Material / description / machine / department"/></div><div><label>Low stock threshold</label><input type="number" id="lowStockThreshold" value="10" min="0"/></div></div>
-<div class="row"><button class="ghost" id="loadSampleBtn" type="button">Load sample data</button><button class="primary" id="clearAllBtn" type="button">Clear all data</button></div>
-<div class="notice" style="margin-top:12px;"><div><b>Import note:</b> The app prefers sheet <b>MR01</b> automatically.</div><div class="small" style="margin-top:4px;">After first load, your data stays on the device using offline storage.</div></div>
-<div class="table-wrap"><table id="previewTable"><thead><tr><th>Material</th><th>Description</th><th class="right">Qty</th><th class="hide-mobile">Bin</th><th class="right">Min</th><th>Status</th></tr></thead><tbody></tbody></table></div>
-<button class="primary" id="exportInventoryBtn" type="button">Export inventory</button></div></section>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">IS</div>
+        <div>
+          <h1>Inventory System</h1>
+          <p>Offline stocktake workspace</p>
+        </div>
+      </div>
 
-<section id="dashboard" class="tab-section" style="display:none;"><div class="grid">
-<div class="kpi"><div class="label">Total items</div><div class="value" id="totalItems">0</div></div>
-<div class="kpi"><div class="label">Total qty</div><div class="value" id="totalQty">0</div></div>
-<div class="kpi stockout"><div class="label">Stockouts</div><div class="value" id="stockoutCount">0</div></div>
-<div class="kpi low"><div class="label">Low stock</div><div class="value" id="lowStockCount">0</div></div>
-<div class="kpi"><div class="label">Counted lines</div><div class="value" id="countedLines">0</div></div>
-<div class="kpi"><div class="label">Variance lines</div><div class="value" id="varianceLines">0</div></div>
-<div class="kpi value"><div class="label">Inventory value</div><div class="value" id="inventoryValue">0</div></div>
-<div class="kpi value"><div class="label">Stockout value risk</div><div class="value" id="stockoutValue">0</div></div>
-</div>
-<div class="card" style="margin-top:12px;"><div class="section-title"><h3>Top critical alerts</h3><button class="ghost" id="goToAlertsBtn" type="button">Open alerts</button></div><div class="table-wrap"><table id="dashboardAlertsTable"><thead><tr><th>Material</th><th>Description</th><th class="right">Qty</th><th class="right">Min</th><th class="hide-mobile">Department</th><th>Status</th></tr></thead><tbody></tbody></table></div></div></section>
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+        <button class="nav-link active" data-tab="upload">
+          <span class="nav-link__icon">⬆</span>
+          <span>Upload</span>
+        </button>
+        <button class="nav-link" data-tab="dashboard">
+          <span class="nav-link__icon">◫</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-link" data-tab="alerts">
+          <span class="nav-link__icon">⚠</span>
+          <span>Alerts</span>
+        </button>
+        <button class="nav-link" data-tab="items">
+          <span class="nav-link__icon">☷</span>
+          <span>Items</span>
+        </button>
+        <button class="nav-link" data-tab="stocktake">
+          <span class="nav-link__icon">✓</span>
+          <span>Stocktake</span>
+        </button>
+        <button class="nav-link" data-tab="settings">
+          <span class="nav-link__icon">⚙</span>
+          <span>Settings</span>
+        </button>
+      </nav>
 
-<section id="alerts" class="tab-section" style="display:none;"><div class="card"><div class="section-title"><h2>Stock alerts</h2><button class="primary" id="exportAlertsBtn" type="button">Export alerts</button></div><div class="row"><div><label>Alert filter</label><select id="alertFilter"><option value="all">All alerts</option><option value="stockout">Stockouts only</option><option value="low">Low stock only</option><option value="review">Needs review</option></select></div><div><label>Search alerts</label><input type="text" id="alertSearch" placeholder="Material / Description / Department / Machine"/></div></div><div class="table-wrap"><table id="alertsTable"><thead><tr><th>Material</th><th>Description</th><th class="right">Qty</th><th class="right">Min</th><th class="hide-mobile">Department</th><th class="hide-mobile">Machine</th><th>Status</th></tr></thead><tbody></tbody></table></div></div></section>
+      <div class="sidebar-card status-card compact">
+        <div class="eyebrow">Device status</div>
+        <div class="status-row">
+          <span class="status-dot is-online" id="deviceStatusDot"></span>
+          <span id="deviceStatusText">Checking connection…</span>
+        </div>
+        <button class="btn btn-secondary btn-block" id="installBtn" type="button" style="display:none;">Install app</button>
+        <p class="small muted">Open once while online, then continue using it offline on this device.</p>
+      </div>
+    </aside>
 
-<section id="items" class="tab-section" style="display:none;"><div class="card"><h2 style="margin-top:0;">Manage items</h2><div class="row"><div><label>Material *</label><input type="text" id="newStockCode"/></div><div><label>Description *</label><input type="text" id="newDescription"/></div></div><div class="row"><div><label>Old stkcode</label><input type="text" id="newAlternateKey"/></div><div><label>Bin location</label><input type="text" id="newDefaultBin"/></div></div><div class="row"><div><label>Stock on hand</label><input type="number" id="newQtyOnHand" value="0"/></div><div><label>minimum QTY</label><input type="number" id="newMinLevel"/></div><div><label>maximum QTY</label><input type="number" id="newMaxLevel"/></div></div><button class="primary" id="addItemBtn" type="button">Add / Update item</button><div class="table-wrap"><table id="itemsTable"><thead><tr><th>Material</th><th>Description</th><th class="right">Qty</th><th class="hide-mobile">Bin</th><th>Status</th><th class="center">Delete</th></tr></thead><tbody></tbody></table></div></div></section>
+    <div class="main-shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Inventory Dashboard + Stocktake</div>
+          <h2 id="pageTitle">Upload Inventory</h2>
+          <p id="pageSubtitle" class="topbar-subtitle">Import Excel data, review it, and prepare your offline workspace.</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-chip" id="sessionChip">No active session</div>
+          <button class="btn btn-primary" id="topQuickAction" type="button">Load sample</button>
+        </div>
+      </header>
 
-<section id="stocktake" class="tab-section" style="display:none;"><div class="card"><h2 style="margin-top:0;">Stocktake</h2><div class="row"><div><label>Session name</label><input type="text" id="sessionName" placeholder="e.g. WC End of Feb 2026 Stocktake"/></div><div><label>Filter</label><input type="text" id="stocktakeFilter" placeholder="Search within stocktake list"/></div></div><div class="row"><button class="ghost" id="saveSessionNameBtn" type="button">Save session name</button><button class="primary" id="markAllUncountedBtn" type="button">Set all CountedQty blank</button></div><div class="table-wrap"><table id="stocktakeTable"><thead><tr><th>Material</th><th>Description</th><th class="right">System Qty</th><th class="right">Counted Qty</th><th class="right">Variance</th><th class="hide-mobile">Bin</th><th>Status</th></tr></thead><tbody></tbody></table></div><div class="row"><button class="primary" id="exportVarianceBtn" type="button">Export variances</button><button class="ghost" id="exportFullCountBtn" type="button">Export full count</button></div></div></section>
+      <main class="content-area">
+        <section id="upload" class="tab-section active" aria-labelledby="pageTitle">
+          <div class="hero-card">
+            <div>
+              <div class="eyebrow">Import workflow</div>
+              <h3>Bring in your latest inventory sheet</h3>
+              <p>Upload your Excel file, preview the imported rows, and keep everything stored locally for stocktake work on phone, tablet, or desktop.</p>
+              <div class="hero-actions">
+                <label class="btn btn-primary file-trigger" for="excelUpload">Choose Excel file</label>
+                <button class="btn btn-secondary" id="loadSampleBtn" type="button">Load sample data</button>
+              </div>
+            </div>
+            <div class="hero-stats">
+              <div class="metric-card accent-blue">
+                <div class="metric-label">Imported items</div>
+                <div class="metric-value" id="heroImportedItems">0</div>
+              </div>
+              <div class="metric-card accent-amber">
+                <div class="metric-label">Flagged items</div>
+                <div class="metric-value" id="heroFlaggedItems">0</div>
+              </div>
+            </div>
+          </div>
 
-<section id="settings" class="tab-section" style="display:none;"><div class="card"><h2 style="margin-top:0;">Phone / Tablet / Offline</h2><div class="notice"><div><b>Android:</b> Open in Chrome → menu → <b>Install app</b> or <b>Add to Home screen</b>.</div><div style="margin-top:6px;"><b>iPhone/iPad:</b> Open in Safari → Share → <b>Add to Home Screen</b>.</div><div style="margin-top:6px;"><b>Offline:</b> Open the app once while online, then it keeps working offline on that device.</div></div><div class="row"><button class="ghost" id="exportCycleCountBtn" type="button">Export cycle count sheet</button><button class="primary" id="exportStocktakeBtn" type="button">Export variances</button></div></div></section>
-</main>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script><script src="./js/app.js" defer></script></body></html>
+          <input type="file" id="excelUpload" accept=".xlsx,.xls" hidden />
+
+          <div class="card-grid card-grid--two">
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Step 1</div>
+                  <h3>Prepare the import</h3>
+                </div>
+              </div>
+              <p class="muted">Supported columns include SAP Material, Material Description, Stock on hand, Bin location, minimum QTY, and maximum QTY.</p>
+              <div class="chip-row">
+                <span class="tag">SAP Material</span>
+                <span class="tag">Material Description</span>
+                <span class="tag">Stock on hand</span>
+                <span class="tag">Bin location</span>
+                <span class="tag">minimum QTY</span>
+                <span class="tag">maximum QTY</span>
+              </div>
+              <div class="form-grid form-grid--two">
+                <div class="field-group">
+                  <label for="searchInput">Search preview</label>
+                  <input type="text" id="searchInput" placeholder="Material, description, machine, department" />
+                </div>
+                <div class="field-group">
+                  <label for="lowStockThreshold">Review threshold</label>
+                  <input type="number" id="lowStockThreshold" value="10" min="0" />
+                </div>
+              </div>
+              <div class="notice-panel info-panel">
+                <strong>Import note:</strong>
+                <span>The app tries to import sheet <b>MR01</b> first. If it does not exist, the first sheet is used automatically.</span>
+              </div>
+            </article>
+
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Step 2</div>
+                  <h3>Quick actions</h3>
+                </div>
+              </div>
+              <div class="action-stack">
+                <button class="action-tile" id="exportInventoryBtn" type="button">
+                  <strong>Export inventory</strong>
+                  <span>Download the current inventory file in Excel format.</span>
+                </button>
+                <button class="action-tile danger" id="clearAllBtn" type="button">
+                  <strong>Clear all local data</strong>
+                  <span>Remove inventory, stocktake counts, and the saved session from this device.</span>
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <article class="surface-card">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Step 3</div>
+                <h3>Preview imported items</h3>
+              </div>
+              <span class="helper-text">Showing up to 250 matching rows</span>
+            </div>
+            <div class="table-wrap">
+              <table id="previewTable">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th class="right">Qty</th>
+                    <th class="hide-mobile">Bin</th>
+                    <th class="right">Min</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="dashboard" class="tab-section" hidden>
+          <div class="overview-grid">
+            <div class="metric-card accent-blue"><div class="metric-label">Total items</div><div class="metric-value" id="totalItems">0</div></div>
+            <div class="metric-card accent-slate"><div class="metric-label">Total qty</div><div class="metric-value" id="totalQty">0</div></div>
+            <div class="metric-card accent-red"><div class="metric-label">Stockouts</div><div class="metric-value" id="stockoutCount">0</div></div>
+            <div class="metric-card accent-amber"><div class="metric-label">Low stock</div><div class="metric-value" id="lowStockCount">0</div></div>
+            <div class="metric-card accent-green"><div class="metric-label">Counted lines</div><div class="metric-value" id="countedLines">0</div></div>
+            <div class="metric-card accent-violet"><div class="metric-label">Variance lines</div><div class="metric-value" id="varianceLines">0</div></div>
+            <div class="metric-card accent-slate"><div class="metric-label">Inventory value</div><div class="metric-value" id="inventoryValue">0</div></div>
+            <div class="metric-card accent-red"><div class="metric-label">Stockout value risk</div><div class="metric-value" id="stockoutValue">0</div></div>
+          </div>
+
+          <div class="card-grid card-grid--two dashboard-panels">
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Progress</div>
+                  <h3>Stocktake snapshot</h3>
+                </div>
+              </div>
+              <div class="progress-list">
+                <div class="progress-item">
+                  <div class="progress-copy">
+                    <strong>Counted progress</strong>
+                    <span id="countedProgressText">0 of 0 lines counted</span>
+                  </div>
+                  <div class="progress-bar"><span id="countedProgressBar"></span></div>
+                </div>
+                <div class="progress-item">
+                  <div class="progress-copy">
+                    <strong>Flagged risk lines</strong>
+                    <span id="flaggedProgressText">0 critical items need attention</span>
+                  </div>
+                  <div class="progress-bar danger"><span id="flaggedProgressBar"></span></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Workspace</div>
+                  <h3>Current session</h3>
+                </div>
+              </div>
+              <div class="session-card">
+                <strong id="dashboardSessionName">No session saved</strong>
+                <p class="muted" id="dashboardSessionMeta">Save a stocktake session name to label exports and keep your work organized.</p>
+                <button class="btn btn-secondary" id="goToStocktakeBtn" type="button">Go to stocktake</button>
+              </div>
+            </article>
+          </div>
+
+          <article class="surface-card">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Critical focus</div>
+                <h3>Top critical alerts</h3>
+              </div>
+              <button class="btn btn-secondary" id="goToAlertsBtn" type="button">Open alerts</button>
+            </div>
+            <div class="table-wrap">
+              <table id="dashboardAlertsTable">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Min</th>
+                    <th class="hide-mobile">Department</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="alerts" class="tab-section" hidden>
+          <article class="surface-card">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Action needed</div>
+                <h3>Stock alerts</h3>
+              </div>
+              <button class="btn btn-primary" id="exportAlertsBtn" type="button">Export alerts</button>
+            </div>
+            <div class="chip-row chip-row--filters">
+              <button class="filter-chip active" data-alert-filter="all" type="button">All alerts</button>
+              <button class="filter-chip" data-alert-filter="stockout" type="button">Stockouts</button>
+              <button class="filter-chip" data-alert-filter="low" type="button">Low stock</button>
+              <button class="filter-chip" data-alert-filter="review" type="button">Needs review</button>
+            </div>
+            <div class="form-grid form-grid--two">
+              <div class="field-group">
+                <label for="alertFilter">Alert filter</label>
+                <select id="alertFilter">
+                  <option value="all">All alerts</option>
+                  <option value="stockout">Stockouts only</option>
+                  <option value="low">Low stock only</option>
+                  <option value="review">Needs review</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="alertSearch">Search alerts</label>
+                <input type="text" id="alertSearch" placeholder="Material, description, department, machine" />
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="alertsTable">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Min</th>
+                    <th class="hide-mobile">Department</th>
+                    <th class="hide-mobile">Machine</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="items" class="tab-section" hidden>
+          <div class="card-grid card-grid--two">
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Inventory maintenance</div>
+                  <h3>Add or update item</h3>
+                </div>
+              </div>
+              <div class="form-grid form-grid--two">
+                <div class="field-group">
+                  <label for="newStockCode">Material *</label>
+                  <input type="text" id="newStockCode" />
+                </div>
+                <div class="field-group">
+                  <label for="newDescription">Description *</label>
+                  <input type="text" id="newDescription" />
+                </div>
+                <div class="field-group">
+                  <label for="newAlternateKey">Old stkcode</label>
+                  <input type="text" id="newAlternateKey" />
+                </div>
+                <div class="field-group">
+                  <label for="newDefaultBin">Bin location</label>
+                  <input type="text" id="newDefaultBin" />
+                </div>
+                <div class="field-group">
+                  <label for="newQtyOnHand">Stock on hand</label>
+                  <input type="number" id="newQtyOnHand" value="0" />
+                </div>
+                <div class="field-group">
+                  <label for="newMinLevel">minimum QTY</label>
+                  <input type="number" id="newMinLevel" />
+                </div>
+                <div class="field-group">
+                  <label for="newMaxLevel">maximum QTY</label>
+                  <input type="number" id="newMaxLevel" />
+                </div>
+              </div>
+              <button class="btn btn-primary" id="addItemBtn" type="button">Save item</button>
+            </article>
+
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Item listing</div>
+                  <h3>Current inventory</h3>
+                </div>
+                <span class="helper-text" id="itemsCountLabel">0 items</span>
+              </div>
+              <div class="table-wrap">
+                <table id="itemsTable">
+                  <thead>
+                    <tr>
+                      <th>Material</th>
+                      <th>Description</th>
+                      <th class="right">Qty</th>
+                      <th class="hide-mobile">Bin</th>
+                      <th>Status</th>
+                      <th class="center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="stocktake" class="tab-section" hidden>
+          <article class="surface-card">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Count workflow</div>
+                <h3>Stocktake session</h3>
+              </div>
+            </div>
+
+            <div class="form-grid form-grid--two">
+              <div class="field-group">
+                <label for="sessionName">Session name</label>
+                <input type="text" id="sessionName" placeholder="e.g. March 2026 Ward Count" />
+              </div>
+              <div class="field-group">
+                <label for="stocktakeFilter">Search stocktake list</label>
+                <input type="text" id="stocktakeFilter" placeholder="Filter by material, description, machine, department" />
+              </div>
+            </div>
+
+            <div class="toolbar-row">
+              <button class="btn btn-secondary" id="saveSessionNameBtn" type="button">Save session name</button>
+              <button class="btn btn-secondary" id="markAllUncountedBtn" type="button">Clear counted quantities</button>
+              <button class="btn btn-primary" id="exportVarianceBtn" type="button">Export variances</button>
+              <button class="btn btn-secondary" id="exportFullCountBtn" type="button">Export full count</button>
+            </div>
+
+            <div class="table-wrap">
+              <table id="stocktakeTable">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th class="right">System Qty</th>
+                    <th class="right">Counted Qty</th>
+                    <th class="right">Variance</th>
+                    <th class="hide-mobile">Bin</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="settings" class="tab-section" hidden>
+          <div class="card-grid card-grid--two">
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Offline support</div>
+                  <h3>Device guidance</h3>
+                </div>
+              </div>
+              <div class="info-list">
+                <div class="info-item"><strong>Android:</strong> Open in Chrome, then use <b>Install app</b> or <b>Add to Home screen</b>.</div>
+                <div class="info-item"><strong>iPhone / iPad:</strong> Open in Safari, tap Share, then choose <b>Add to Home Screen</b>.</div>
+                <div class="info-item"><strong>Offline use:</strong> Open the app once while online so the browser can cache the project files.</div>
+              </div>
+            </article>
+
+            <article class="surface-card">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Exports</div>
+                  <h3>Useful downloads</h3>
+                </div>
+              </div>
+              <div class="action-stack">
+                <button class="action-tile" id="exportCycleCountBtn" type="button">
+                  <strong>Export cycle count sheet</strong>
+                  <span>Blank count sheet using the current inventory.</span>
+                </button>
+                <button class="action-tile" id="exportStocktakeBtn" type="button">
+                  <strong>Export variances</strong>
+                  <span>Download only the lines where counted quantity differs from system quantity.</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="mobile-nav__link active" data-tab="upload"><span>⬆</span><small>Upload</small></button>
+    <button class="mobile-nav__link" data-tab="dashboard"><span>◫</span><small>Home</small></button>
+    <button class="mobile-nav__link" data-tab="alerts"><span>⚠</span><small>Alerts</small></button>
+    <button class="mobile-nav__link" data-tab="items"><span>☷</span><small>Items</small></button>
+    <button class="mobile-nav__link" data-tab="stocktake"><span>✓</span><small>Count</small></button>
+  </nav>
+
+  <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+  <div id="systemModalRoot" class="modal-root" aria-live="assertive"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+  <script src="./js/app.js" defer></script>
+</body>
+</html>
